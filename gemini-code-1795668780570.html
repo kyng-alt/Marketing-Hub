@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Savanna Expedition Strategy — Educational Escape Room</title>
+  <style>
+    /* ==========================================================================
+       1. CSS VARIABLES & SAFARI EXPEDITION THEME
+       ========================================================================== */
+    :root {
+      --bg-sand: #f4efe6;
+      --bg-card: rgba(255, 252, 245, 0.96);
+      --bg-dark: #231f1a;
+      --text-main: #1f1c18;
+      --text-muted: #574f44;
+      --accent-amber: #b45309;
+      --accent-amber-hover: #92400e;
+      --accent-olive: #2f5233;
+      --accent-olive-light: #e6f0e7;
+      --danger-red: #b91c1c;
+      --danger-bg: #fef2f2;
+      --border-tan: #d6c7b2;
+      --focus-ring: #0284c7;
+      --shadow-card: 0 10px 28px rgba(35, 31, 26, 0.25);
+      --radius-lg: 14px;
+      --radius-md: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.55;
+    }
+
+    /* Accessible Focus Indicator */
+    :focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    /* ==========================================================================
+       2. TOP HUD (STATUS BAR)
+       ========================================================================== */
+    .hud-bar {
+      background-color: var(--bg-dark);
+      color: #fdfbf7;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      border-bottom: 2px solid #4a3f32;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .hud-brand {
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .hud-stats {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .stat-pill {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .stat-pill.warning {
+      background: #7f1d1d;
+      border-color: #ef4444;
+      color: #fecaca;
+    }
+
+    .hud-controls {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    /* ==========================================================================
+       3. BACKGROUND VIEWPORT & SCREEN CONTAINERS
+       ========================================================================== */
+    .game-stage {
+      flex: 1;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-color: #3a3228;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1rem;
+      transition: background-image 0.35s ease-in-out;
+    }
+
+    .screen {
+      display: none;
+      width: 100%;
+      max-width: 880px;
+      background: var(--bg-card);
+      border: 2px solid var(--border-tan);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      padding: 2rem;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1, h2, h3 {
+      margin-top: 0;
+      color: #1c1712;
+      line-height: 1.25;
+    }
+
+    h1 { font-size: 1.85rem; }
+    h2 { font-size: 1.45rem; }
+    h3 { font-size: 1.15rem; }
+
+    .subtitle-badge {
+      display: inline-block;
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #f59e0b;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.2rem 0.65rem;
+      border-radius: 999px;
+      margin-bottom: 0.65rem;
+    }
+
+    .narrative-box {
+      background: #f7f1e3;
+      border-left: 4px solid var(--accent-amber);
+      padding: 1rem 1.15rem;
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      margin-bottom: 1.25rem;
+      font-size: 1.02rem;
+    }
+
+    .objective-box {
+      background: var(--accent-olive-light);
+      border-left: 4px solid var(--accent-olive);
+      padding: 0.75rem 1rem;
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+
+    /* ==========================================================================
+       4. BUTTONS
+       ========================================================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      padding: 0.7rem 1.35rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background-color 0.15s, transform 0.1s;
+      text-decoration: none;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background-color: var(--accent-amber);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--accent-amber-hover);
+    }
+
+    .btn-secondary {
+      background-color: #e7dfd1;
+      color: var(--text-main);
+      border-color: #c5b69e;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background-color: #dad0be;
+    }
+
+    .btn-success {
+      background-color: var(--accent-olive);
+      color: #ffffff;
+    }
+
+    .btn-success:hover:not(:disabled) {
+      background-color: #233f26;
+    }
+
+    .btn-hud {
+      padding: 0.35rem 0.75rem;
+      font-size: 0.85rem;
+      background: #3b332b;
+      color: #fdfbf7;
+      border: 1px solid #635648;
+    }
+
+    .btn-hud:hover {
+      background: #4f4439;
+    }
+
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+    }
+
+    /* ==========================================================================
+       5. NAVIGATION MAP & PROGRESS INDICATORS
+       ========================================================================== */
+    .progress-tracker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      padding: 0.75rem;
+      background: #efe8da;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-tan);
+    }
+
+    .progress-step {
+      flex: 1;
+      min-width: 140px;
+      padding: 0.45rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      background: #ffffff;
+      border: 1px solid #d6c7b2;
+      text-align: center;
+    }
+
+    .progress-step.done {
+      background: var(--accent-olive-light);
+      border-color: var(--accent-olive);
+      color: var(--accent-olive);
+    }
+
+    .rooms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .room-card {
+      background: #ffffff;
+      border: 2px solid var(--border-tan);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.85rem;
+    }
+
+    .room-card.completed {
+      border-color: var(--accent-olive);
+      background: #f6faf6;
+    }
+
+    .room-card.locked {
+      background: #f3efe8;
+      border-style: dashed;
+    }
+
+    .status-tag {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .status-open { background: #fef3c7; color: #92400e; }
+    .status-done { background: #dcfce7; color: #166534; }
+    .status-locked { background: #e5e7eb; color: #374151; }
+
+    /* ==========================================================================
+       6. DOCUMENT RECONSTRUCTION BENCH
+       ========================================================================== */
+    .reconstruction-panel {
+      background: #f8f3e8;
+      border: 2px solid var(--border-tan);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+    }
+
+    .fragments-stage {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: stretch;
+      gap: 0;
+      margin: 1rem 0;
+      min-height: 150px;
+    }
+
+    .fragments-stage.separated {
+      gap: 1rem;
+    }
+
+    .fragment-slot {
+      flex: 1 1 260px;
+      max-width: 340px;
+      border: 2px dashed #b5a48b;
+      background: #ede4d3;
+      border-radius: 6px;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      min-height: 160px;
+    }
+
+    .fragments-stage:not(.separated) .fragment-slot.collected {
+      border-style: solid;
+      border-color: var(--accent-amber);
+      border-radius: 0;
+      padding: 0.25rem;
+      background: #fffdf8;
+    }
+
+    .fragments-stage:not(.separated) .fragment-slot.collected:first-child {
+      border-right: 1px dashed #92400e;
+      border-radius: 6px 0 0 6px;
+    }
+
+    .fragments-stage:not(.separated) .fragment-slot.collected:last-child {
+      border-left: none;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .fragment-img {
+      max-width: 100%;
+      max-height: 210px;
+      height: auto;
+      display: block;
+      border-radius: 4px;
+    }
+
+    .img-fallback-note {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      background: #fff8eb;
+      border: 1px solid #f59e0b;
+      padding: 0.65rem;
+      border-radius: 6px;
+      margin-top: 0.5rem;
+    }
+
+    .code-entry-box {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-tan);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .code-input {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.35em;
+      text-align: center;
+      width: 150px;
+      padding: 0.5rem 0.75rem;
+      border: 2px solid #8c7a62;
+      border-radius: var(--radius-md);
+      background: #ffffff;
+    }
+
+    /* ==========================================================================
+       7. QUESTION CARDS & INTERACTIVE CONTROLS
+       ========================================================================== */
+    .question-card {
+      background: #ffffff;
+      border: 2px solid var(--border-tan);
+      border-radius: var(--radius-md);
+      padding: 1.35rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .question-card.solved {
+      border-color: var(--accent-olive);
+      background: #f8fcf8;
+    }
+
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .option-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin: 1rem 0;
+    }
+
+    .option-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      padding: 0.75rem 0.9rem;
+      border: 1.5px solid #d6c7b2;
+      border-radius: var(--radius-md);
+      background: #fcfaf6;
+      cursor: pointer;
+      transition: background-color 0.15s, border-color 0.15s;
+    }
+
+    .option-label:hover {
+      background: #f5efe2;
+      border-color: var(--accent-amber);
+    }
+
+    .option-label input {
+      margin-top: 0.25rem;
+      transform: scale(1.2);
+      accent-color: var(--accent-amber);
+    }
+
+    /* Matching Grid */
+    .matching-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      margin: 1rem 0;
+    }
+
+    .matching-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+      padding: 0.85rem;
+      background: #fcfaf6;
+      border: 1.5px solid #d6c7b2;
+      border-radius: var(--radius-md);
+    }
+
+    @media (min-width: 680px) {
+      .matching-row {
+        grid-template-columns: 1.2fr 1fr;
+        align-items: center;
+        gap: 1rem;
+      }
+    }
+
+    select.game-select {
+      width: 100%;
+      padding: 0.55rem 0.65rem;
+      font-size: 0.95rem;
+      border: 1.5px solid #8c7a62;
+      border-radius: 6px;
+      background-color: #ffffff;
+      color: var(--text-main);
+    }
+
+    /* Sequencing List */
+    .sequence-list {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .sequence-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.75rem 0.9rem;
+      background: #fcfaf6;
+      border: 1.5px solid #d6c7b2;
+      border-radius: var(--radius-md);
+    }
+
+    .sequence-step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-amber);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .sequence-text {
+      flex: 1;
+      font-weight: 500;
+    }
+
+    .sequence-controls {
+      display: flex;
+      gap: 0.35rem;
+      flex-shrink: 0;
+    }
+
+    .btn-seq {
+      padding: 0.35rem 0.6rem;
+      font-size: 0.85rem;
+      background: #ede4d3;
+      border: 1px solid #b5a48b;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .btn-seq:hover:not(:disabled) {
+      background: #dfd1b8;
+    }
+
+    .btn-seq:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Dropdown Cloze Passage */
+    .cloze-passage {
+      background: #f7f1e3;
+      border: 1.5px solid #d6c7b2;
+      border-radius: var(--radius-md);
+      padding: 1.15rem;
+      font-size: 1.02rem;
+      line-height: 1.85;
+      margin: 1rem 0;
+    }
+
+    .inline-select {
+      padding: 0.3rem 0.55rem;
+      font-size: 0.98rem;
+      font-weight: 600;
+      border: 2px solid var(--accent-amber);
+      border-radius: 6px;
+      background: #ffffff;
+      color: var(--text-main);
+    }
+
+    /* Feedback & Hints */
+    .hint-box {
+      margin-top: 0.75rem;
+      padding: 0.7rem 0.9rem;
+      background: #eff6ff;
+      border-left: 4px solid #2563eb;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.92rem;
+      color: #1e3a8a;
+      display: none;
+    }
+
+    .hint-box.visible {
+      display: block;
+    }
+
+    .feedback-box {
+      margin-top: 0.9rem;
+      padding: 0.85rem 1rem;
+      border-radius: 6px;
+      font-weight: 500;
+      display: none;
+    }
+
+    .feedback-box.correct {
+      display: block;
+      background: #dcfce7;
+      border: 1.5px solid #16a34a;
+      color: #14532d;
+    }
+
+    .feedback-box.incorrect {
+      display: block;
+      background: var(--danger-bg);
+      border: 1.5px solid var(--danger-red);
+      color: #7f1d1d;
+    }
+
+    /* Fragment Reward Modal / Banner inside Room */
+    .reward-panel {
+      margin-top: 1.5rem;
+      padding: 1.35rem;
+      background: #fefce8;
+      border: 2px solid #ca8a04;
+      border-radius: var(--radius-md);
+      text-align: center;
+      display: none;
+    }
+
+    .reward-panel.visible {
+      display: block;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .reward-panel img {
+      max-width: 280px;
+      width: 100%;
+      height: auto;
+      margin: 0.75rem auto;
+      border: 2px solid #92400e;
+      border-radius: 6px;
+      display: block;
+    }
+
+    /* Summary Table on Completion Screen */
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.25rem 0;
+    }
+
+    .summary-table th,
+    .summary-table td {
+      padding: 0.65rem 0.85rem;
+      border: 1px solid var(--border-tan);
+      text-align: left;
+    }
+
+    .summary-table th {
+      background: #efe8da;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ======================================================================
+       AUDIO RESOURCES (Exact filenames in assets/ folder)
+       ====================================================================== -->
+  <audio id="audio-bg" src="assets/background_music.mp3" loop preload="auto"></audio>
+  <audio id="audio-correct" src="assets/correct.mp3" preload="auto"></audio>
+  <audio id="audio-incorrect" src="assets/incorrect.mp3" preload="auto"></audio>
+  <audio id="audio-doc" src="assets/document_found.mp3" preload="auto"></audio>
+  <audio id="audio-unlock" src="assets/door_unlock.mp3" preload="auto"></audio>
+
+  <!-- Live region for screen-reader announcements -->
+  <div id="sr-announcer" class="sr-only" aria-live="polite"></div>
+
+  <!-- ======================================================================
+       HEADS-UP DISPLAY (TIMER, LIFE POINTS, AUDIO & RESTART)
+       ====================================================================== -->
+  <header class="hud-bar" id="hud-bar" style="display: none;">
+    <div class="hud-brand">
+      <span>🧭 Savanna Expedition: Marketing Mix</span>
+    </div>
+    <div class="hud-stats">
+      <div class="stat-pill" id="timer-pill" aria-label="Remaining time">
+        <span>⏱ Time:</span>
+        <span id="hud-timer">20:00</span>
+      </div>
+      <div class="stat-pill" id="life-pill" aria-label="Remaining life points">
+        <span>❤️ Life Points:</span>
+        <span id="hud-life">100</span>
+      </div>
+      <div class="stat-pill" aria-label="Collected fragments">
+        <span>🗺 Fragments:</span>
+        <span id="hud-fragments">0 / 2</span>
+      </div>
+    </div>
+    <div class="hud-controls">
+      <button type="button" class="btn btn-hud" id="btn-mute" aria-pressed="false">
+        🔊 Mute Audio
+      </button>
+      <button type="button" class="btn btn-hud" id="btn-hud-restart">
+        ↻ Restart
+      </button>
+    </div>
+  </header>
+
+  <!-- ======================================================================
+       MAIN STAGE (Dynamic Background Image Container)
+       ====================================================================== -->
+  <main class="game-stage" id="game-stage" style="background-image: url('assets/cover.png');">
+
+    <!-- ====================================================================
+         SCREEN 1: START SCREEN
+         ==================================================================== -->
+    <section id="screen-start" class="screen active" aria-labelledby="start-title">
+      <span class="subtitle-badge">Marketing Mix (4Ps) • Diploma Expedition</span>
+      <h1 id="start-title">The Savanna Expedition Strategy</h1>
+      <div class="narrative-box">
+        <p style="margin: 0;">
+          You and your research team are stranded at a remote wildlife conservation outpost in the Serengeti.
+          The expedition’s lead vehicle has lost communication with base camp, and the emergency satellite transmitter
+          is locked inside the <strong>Command Tent (Room 3)</strong>. To unlock it, you must explore two open sectors
+          of the camp—the <strong>Supply Depot (Room 1)</strong> and the <strong>Field Observatory (Room 2)</strong>—and
+          apply the <strong>Marketing Mix (4Ps)</strong> to launch an eco-tourism conservation campaign that funds your rescue.
+        </p>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">
+        Click <strong>Start</strong> below to review your mission briefing and activate expedition audio.
+      </p>
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="btn-start">
+          Start Expedition →
+        </button>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN 2: INSTRUCTIONS SCREEN
+         ==================================================================== -->
+    <section id="screen-instructions" class="screen" aria-labelledby="inst-title">
+      <span class="subtitle-badge">Mission Briefing</span>
+      <h2 id="inst-title">How to Complete Your Expedition</h2>
+      <p>
+        <strong>Educational Mission:</strong> Demonstrate why coordinating all four elements of the Marketing Mix
+        (<strong>Product, Price, Place, and Promotion</strong>) is essential for business success and customer value.
+      </p>
+      <ul>
+        <li><strong>Three-Room Structure:</strong> You can enter <strong>Room 1 (The Supply Depot)</strong> and <strong>Room 2 (The Field Observatory)</strong> in any order from the Navigation Map. <strong>Room 3 (The Command Tent)</strong> starts locked.</li>
+        <li><strong>Collecting Document Fragments:</strong> Solving all questions in Room 1 reveals <strong>Fragment 1</strong>. Solving all questions in Room 2 reveals <strong>Fragment 2</strong>.</li>
+        <li><strong>Unlocking Room 3:</strong> Once both torn fragments are collected, they join together on the Navigation Map to reveal a <strong>four-digit access code</strong>. Enter that code to unlock Room 3 and complete the final challenge.</li>
+        <li><strong>Timer &amp; Life Points:</strong> You have <strong>20 minutes</strong> and start with <strong>100 Life Points</strong>. Each incorrect answer deducts <strong>10 Life Points</strong>. Optional hints are available on every challenge without penalty.</li>
+      </ul>
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="btn-continue-map">
+          Continue to Navigation Map →
+        </button>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN 3: NAVIGATION MAP & DOCUMENT RECONSTRUCTION
+         ==================================================================== -->
+    <section id="screen-map" class="screen" aria-labelledby="map-title">
+      <span class="subtitle-badge">Base Camp Overview</span>
+      <h2 id="map-title">Expedition Navigation Map</h2>
+
+      <!-- Visual Progress Indicator -->
+      <div class="progress-tracker" role="region" aria-label="Mission Progress">
+        <div class="progress-step" id="prog-r1">Room 1: Incomplete</div>
+        <div class="progress-step" id="prog-r2">Room 2: Incomplete</div>
+        <div class="progress-step" id="prog-code">4-Digit Code: Locked</div>
+        <div class="progress-step" id="prog-r3">Room 3: Locked</div>
+      </div>
+
+      <!-- Three Room Cards -->
+      <div class="rooms-grid">
+        <!-- Room 1 Card -->
+        <article class="room-card" id="card-room1">
+          <div>
+            <span class="status-tag status-open" id="tag-room1">Open Access</span>
+            <h3 style="margin-top: 0.5rem;">Room 1: The Supply Depot</h3>
+            <p style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 0;">
+              Align the 4Ps for a luxury eco-safari package to recover the first torn document fragment.
+            </p>
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-open-room1">
+            Enter Room 1
+          </button>
+        </article>
+
+        <!-- Room 2 Card -->
+        <article class="room-card" id="card-room2">
+          <div>
+            <span class="status-tag status-open" id="tag-room2">Open Access</span>
+            <h3 style="margin-top: 0.5rem;">Room 2: The Field Observatory</h3>
+            <p style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 0;">
+              Sequence the marketing workflow and adapt to market conditions to recover the second fragment.
+            </p>
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-open-room2">
+            Enter Room 2
+          </button>
+        </article>
+
+        <!-- Room 3 Card -->
+        <article class="room-card locked" id="card-room3">
+          <div>
+            <span class="status-tag status-locked" id="tag-room3">Locked</span>
+            <h3 style="margin-top: 0.5rem;">Room 3: The Command Tent</h3>
+            <p style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 0;">
+              Requires both document fragments and the 4-digit security code to access the satellite radio.
+            </p>
+          </div>
+          <button type="button" class="btn btn-secondary" id="btn-open-room3" disabled>
+            🔒 Locked
+          </button>
+        </article>
+      </div>
+
+      <!-- Document Reconstruction Area -->
+      <div class="reconstruction-panel" aria-labelledby="recon-title">
+        <h3 id="recon-title" style="margin-bottom: 0.35rem;">Expedition Logbook Reconstruction</h3>
+        <p id="recon-status-text" style="margin-top: 0; font-size: 0.95rem; color: var(--text-muted);">
+          Complete Room 1 and Room 2 to collect both torn fragments of the logbook.
+        </p>
+
+        <div class="fragments-stage separated" id="fragments-stage">
+          <!-- Fragment 1 Slot -->
+          <div class="fragment-slot" id="slot-frag1">
+            <span style="color: var(--text-muted); font-weight: 600;">Fragment 1 Missing</span>
+            <small style="color: var(--text-muted);">Complete Room 1 to reveal</small>
+          </div>
+
+          <!-- Fragment 2 Slot -->
+          <div class="fragment-slot" id="slot-frag2">
+            <span style="color: var(--text-muted); font-weight: 600;">Fragment 2 Missing</span>
+            <small style="color: var(--text-muted);">Complete Room 2 to reveal</small>
+          </div>
+        </div>
+
+        <!-- Accessible Text Equivalent (Only populated after BOTH fragments are collected) -->
+        <div id="accessible-clue-box" class="objective-box" style="display: none; margin-top: 1rem;"></div>
+
+        <!-- Four-Digit Code Entry -->
+        <div class="code-entry-box" id="code-entry-section">
+          <label for="code-input" style="font-weight: 700;">Enter 4-Digit Access Code:</label>
+          <input
+            type="text"
+            id="code-input"
+            class="code-input"
+            maxlength="4"
+            inputmode="numeric"
+            pattern="[0-9]{4}"
+            placeholder="----"
+            aria-describedby="code-feedback"
+            disabled
+          />
+          <button type="button" class="btn btn-success" id="btn-submit-code" disabled>
+            Unlock Room 3
+          </button>
+        </div>
+        <div id="code-feedback" class="feedback-box" role="alert"></div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN 4: ROOM 1 — THE SUPPLY DEPOT
+         ==================================================================== -->
+    <section id="screen-room1" class="screen" aria-labelledby="r1-title">
+      <div class="btn-row" style="margin-top: 0; margin-bottom: 1rem;">
+        <button type="button" class="btn btn-secondary" data-nav="map">← Back to Map</button>
+      </div>
+      <span class="subtitle-badge">Room 1 of 3</span>
+      <h2 id="r1-title">The Supply Depot</h2>
+      <div class="narrative-box">
+        <p style="margin: 0;">
+          Inside the canvas supply tent, crates of expedition gear sit beside brochures for a new luxury eco-safari package.
+          To retrieve the first torn half of the Expedition Logbook, you must prove you understand why aligning the core
+          elements of the Marketing Mix is critical before launching a campaign.
+        </p>
+      </div>
+      <div class="objective-box">
+        <strong>Learning Objective:</strong> Understand why the 4Ps of the Marketing Mix must work together cohesively
+        rather than in isolation to meet customer needs and achieve business objectives.
+      </div>
+
+      <!-- Question 1.1: Multiple Selection -->
+      <div class="question-card" id="q1-1-card">
+        <div class="question-header">
+          <h3 style="margin: 0;">Question 1.1 (Multiple Selection)</h3>
+          <button type="button" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;" onclick="toggleHint('hint-1-1')">
+            💡 Hint
+          </button>
+        </div>
+        <p>
+          Why is it important for a marketing manager to coordinate all four elements of the Marketing Mix
+          (Product, Price, Place, Promotion) rather than focusing on just one strong element? <em>(Select all that apply)</em>
+        </p>
+        <div class="hint-box" id="hint-1-1">
+          <strong>Hint:</strong> Think about whether advertising alone can save a flawed product, and how all four elements work together to build trust and positioning. Three options are correct.
+        </div>
+
+        <div class="option-list" role="group" aria-label="Question 1.1 options">
+          <label class="option-label">
+            <input type="checkbox" name="q1_1" value="A" />
+            <span><strong>A.</strong> A misaligned element (such as luxury pricing paired with budget-level product quality) creates customer confusion and erodes brand trust.</span>
+          </label>
+          <label class="option-label">
+            <input type="checkbox" name="q1_1" value="B" />
+            <span><strong>B.</strong> Focusing exclusively on heavy promotion guarantees long-term sales even if the product fails to solve a customer problem.</span>
+          </label>
+          <label class="option-label">
+            <input type="checkbox" name="q1_1" value="C" />
+            <span><strong>C.</strong> Coordinating the 4Ps ensures the offering delivers consistent value to the specific target market across every customer touchpoint.</span>
+          </label>
+          <label class="option-label">
+            <input type="checkbox" name="q1_1" value="D" />
+            <span><strong>D.</strong> Each element relies on the others to position the brand effectively against competitors in the market.</span>
+          </label>
+        </div>
+
+        <button type="button" class="btn btn-primary" id="btn-submit-1-1" onclick="checkQ1_1()">
+          Submit Answer 1.1
+        </button>
+        <div id="fb-1-1" class="feedback-box" role="alert"></div>
+      </div>
+
+      <!-- Question 1.2: Matching -->
+      <div class="question-card" id="q1-2-card">
+        <div class="question-header">
+          <h3 style="margin: 0;">Question 1.2 (Matching)</h3>
+          <button type="button" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;" onclick="toggleHint('hint-1-2')">
+            💡 Hint
+          </button>
+        </div>
+        <p>
+          Match each Marketing Mix failure scenario on the left with the specific strategic consequence on the right.
+        </p>
+        <div class="hint-box" id="hint-1-2">
+          <strong>Hint:</strong> Identify which two "Ps" clash in each scenario (e.g., booking channels relate to <em>Place</em>, packaging relates to <em>Product</em>, and audience targeting relates to <em>Promotion</em>).
+        </div>
+
+        <div class="matching-grid">
+          <div class="matching-row">
+            <div>
+              <label for="match-1"><strong>1.</strong> High-end eco-lodge advertised heavily on social media, but booking is only possible via an outdated landline phone.</label>
+            </div>
+            <div>
+              <select id="match-1" class="game-select">
+                <option value="">-- Select strategic consequence --</option>
+                <option value="A">A. Place–Promotion Mismatch: High awareness fails to convert into sales due to distribution friction.</option>
+                <option value="B">B. Product–Price Mismatch: Perceived value drops because packaging fails to justify the cost.</option>
+                <option value="C">C. Promotion–Target Market Mismatch: Marketing budget is wasted reaching an audience with the wrong price sensitivity.</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="matching-row">
+            <div>
+              <label for="match-2"><strong>2.</strong> Premium organic trail mix packaged in flimsy, unbranded plastic bags at a luxury price point.</label>
+            </div>
+            <div>
+              <select id="match-2" class="game-select">
+                <option value="">-- Select strategic consequence --</option>
+                <option value="A">A. Place–Promotion Mismatch: High awareness fails to convert into sales due to distribution friction.</option>
+                <option value="B">B. Product–Price Mismatch: Perceived value drops because packaging fails to justify the cost.</option>
+                <option value="C">C. Promotion–Target Market Mismatch: Marketing budget is wasted reaching an audience with the wrong price sensitivity.</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="matching-row">
+            <div>
+              <label for="match-3"><strong>3.</strong> Affordable student-targeted safari tour promoted exclusively in high-end luxury golf magazines.</label>
+            </div>
+            <div>
+              <select id="match-3" class="game-select">
+                <option value="">-- Select strategic consequence --</option>
+                <option value="A">A. Place–Promotion Mismatch: High awareness fails to convert into sales due to distribution friction.</option>
+                <option value="B">B. Product–Price Mismatch: Perceived value drops because packaging fails to justify the cost.</option>
+                <option value="C">C. Promotion–Target Market Mismatch: Marketing budget is wasted reaching an audience with the wrong price sensitivity.</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-primary" id="btn-submit-1-2" onclick="checkQ1_2()">
+          Submit Answer 1.2
+        </button>
+        <div id="fb-1-2" class="feedback-box" role="alert"></div>
+      </div>
+
+      <!-- Room 1 Reward Panel -->
+      <div class="reward-panel" id="reward-room1">
+        <h3>🎉 Supply Depot Cleared! Document Fragment 1 Found</h3>
+        <p>You recovered the left half of the torn Expedition Logbook.</p>
+        <img src="assets/fragment1.png" alt="First torn document fragment recovered from Room 1" onerror="handleImgError(this, 'Fragment 1 (assets/fragment1.png) collected!')" />
+        <div class="btn-row" style="justify-content: center;">
+          <button type="button" class="btn btn-success" data-nav="map">
+            Return to Navigation Map →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN 5: ROOM 2 — THE FIELD OBSERVATORY
+         ==================================================================== -->
+    <section id="screen-room2" class="screen" aria-labelledby="r2-title">
+      <div class="btn-row" style="margin-top: 0; margin-bottom: 1rem;">
+        <button type="button" class="btn btn-secondary" data-nav="map">← Back to Map</button>
+      </div>
+      <span class="subtitle-badge">Room 2 of 3</span>
+      <h2 id="r2-title">The Field Observatory</h2>
+      <div class="narrative-box">
+        <p style="margin: 0;">
+          High above the acacia trees, the wooden observatory overlooks the watering hole. Binoculars, field notes,
+          and a competitor analysis board cover the desk. Solve the challenges here to uncover the second half of the
+          Expedition Logbook.
+        </p>
+      </div>
+      <div class="objective-box">
+        <strong>Learning Objective:</strong> Understand the role of the Marketing Mix in adapting to market conditions
+        and executing a logical marketing workflow.
+      </div>
+
+      <!-- Question 2.1: Sequencing -->
+      <div class="question-card" id="q2-1-card">
+        <div class="question-header">
+          <h3 style="margin: 0;">Question 2.1 (Sequencing)</h3>
+          <button type="button" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;" onclick="toggleHint('hint-2-1')">
+            💡 Hint
+          </button>
+        </div>
+        <p>
+          Arrange the following steps in the logical strategic order a marketer uses to apply the Marketing Mix effectively.
+          <em>(1 = First step, 4 = Final step. Use the Up/Down buttons to reorder.)</em>
+        </p>
+        <div class="hint-box" id="hint-2-1">
+          <strong>Hint:</strong> Start by identifying <em>who</em> the customer is before designing what they will buy, and always establish value and distribution before advertising.
+        </div>
+
+        <ol class="sequence-list" id="sequence-list" aria-label="Marketing Mix workflow steps"></ol>
+
+        <button type="button" class="btn btn-primary" id="btn-submit-2-1" onclick="checkQ2_1()">
+          Submit Order 2.1
+        </button>
+        <div id="fb-2-1" class="feedback-box" role="alert"></div>
+      </div>
+
+      <!-- Question 2.2: Dropdown Completion -->
+      <div class="question-card" id="q2-2-card">
+        <div class="question-header">
+          <h3 style="margin: 0;">Question 2.2 (Dropdown Completion)</h3>
+          <button type="button" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;" onclick="toggleHint('hint-2-2')">
+            💡 Hint
+          </button>
+        </div>
+        <p>
+          Complete the field report below by selecting the correct terms from the dropdown menus.
+        </p>
+        <div class="hint-box" id="hint-2-2">
+          <strong>Hint:</strong> One "P" focuses on distribution and customer access, while another "P" can be adjusted quickly to match competitor discounts.
+        </div>
+
+        <div class="cloze-passage">
+          “Using the Marketing Mix effectively is vital because it translates broad business goals into actionable decisions.
+          When a company enters a new market, adjusting
+          <label for="dd-1" class="sr-only">Dropdown 1</label>
+          <select id="dd-1" class="inline-select">
+            <option value="">[Select 1]</option>
+            <option value="Product">Product</option>
+            <option value="Price">Price</option>
+            <option value="Place">Place</option>
+            <option value="Promotion">Promotion</option>
+          </select>
+          ensures customers can easily access the offering, while modifying
+          <label for="dd-2" class="sr-only">Dropdown 2</label>
+          <select id="dd-2" class="inline-select">
+            <option value="">[Select 2]</option>
+            <option value="Product">Product</option>
+            <option value="Price">Price</option>
+            <option value="Place">Place</option>
+            <option value="Promotion">Promotion</option>
+          </select>
+          allows the business to respond rapidly to competitor discounts without permanently altering brand quality.”
+        </div>
+
+        <button type="button" class="btn btn-primary" id="btn-submit-2-2" onclick="checkQ2_2()">
+          Submit Answer 2.2
+        </button>
+        <div id="fb-2-2" class="feedback-box" role="alert"></div>
+      </div>
+
+      <!-- Room 2 Reward Panel -->
+      <div class="reward-panel" id="reward-room2">
+        <h3>🎉 Field Observatory Cleared! Document Fragment 2 Found</h3>
+        <p>You recovered the right half of the torn Expedition Logbook.</p>
+        <img src="assets/fragment2.png" alt="Second torn document fragment recovered from Room 2" onerror="handleImgError(this, 'Fragment 2 (assets/fragment2.png) collected!')" />
+        <div class="btn-row" style="justify-content: center;">
+          <button type="button" class="btn btn-success" data-nav="map">
+            Return to Navigation Map →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN 6: ROOM 3 — THE COMMAND TENT (FINAL CHALLENGE)
+         ==================================================================== -->
+    <section id="screen-room3" class="screen" aria-labelledby="r3-title">
+      <div class="btn-row" style="margin-top: 0; margin-bottom: 1rem;">
+        <button type="button" class="btn btn-secondary" data-nav="map">← Back to Map</button>
+      </div>
+      <span class="subtitle-badge">Room 3 of 3 • Final Challenge</span>
+      <h2 id="r3-title">The Command Tent</h2>
+      <div class="narrative-box">
+        <p style="margin: 0;">
+          The heavy canvas flaps of the Command Tent part as the keypad clicks green. Inside, the emergency satellite
+          radio blinks red—it requires a final strategic authorization override to broadcast your rescue signal to
+          Nairobi Base Camp.
+        </p>
+      </div>
+      <div class="objective-box">
+        <strong>Learning Objective:</strong> Synthesize the importance of the Marketing Mix by evaluating how an
+        integrated 4P adjustment solves a real-world business challenge.
+      </div>
+
+      <!-- Question 3.1: Multiple Choice -->
+      <div class="question-card" id="q3-1-card">
+        <div class="question-header">
+          <h3 style="margin: 0;">Question 3.1 (Multiple Choice — Single Correct Answer)</h3>
+          <button type="button" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;" onclick="toggleHint('hint-3-1')">
+            💡 Hint
+          </button>
+        </div>
+        <p>
+          A safari tour operator notices that bookings for its 7-day photography expedition have dropped by 40%, even though
+          social media ad views are at an all-time high. Customer surveys reveal that amateur photographers find the $4,500
+          price too steep for a trip that lacks professional camera-gear rentals and has no online installment payment option.
+          Which statement best explains why applying a holistic Marketing Mix approach is critical here?
+        </p>
+        <div class="hint-box" id="hint-3-1">
+          <strong>Hint:</strong> Look at what is already working (Promotion/ad views) versus what customer feedback says is broken (equipment features and payment flexibility).
+        </div>
+
+        <div class="option-list" role="radiogroup" aria-label="Question 3.1 options">
+          <label class="option-label">
+            <input type="radio" name="q3_1" value="A" />
+            <span><strong>A.</strong> Increasing the social media ad budget will overcome customer hesitation without needing to change the tour package.</span>
+          </label>
+          <label class="option-label">
+            <input type="radio" name="q3_1" value="B" />
+            <span><strong>B.</strong> Dropping the price to $1,500 alone will restore profitability without adjusting the tour’s features or booking process.</span>
+          </label>
+          <label class="option-label">
+            <input type="radio" name="q3_1" value="C" />
+            <span><strong>C.</strong> The drop in bookings stems from a breakdown across Product (missing gear rentals) and Price/Place (lack of flexible payment options), proving that Promotion alone cannot compensate for gaps in the other 3Ps.</span>
+          </label>
+          <label class="option-label">
+            <input type="radio" name="q3_1" value="D" />
+            <span><strong>D.</strong> Replacing the photography tour with an unrelated budget camping trip is the only way to use the Marketing Mix effectively.</span>
+          </label>
+        </div>
+
+        <button type="button" class="btn btn-primary" id="btn-submit-3-1" onclick="checkQ3_1()">
+          Transmit Final Answer
+        </button>
+        <div id="fb-3-1" class="feedback-box" role="alert"></div>
+      </div>
+
+      <div class="reward-panel" id="reward-room3">
+        <h3>📡 Satellite Signal Transmitted!</h3>
+        <p>Nairobi Base Camp has locked onto your coordinates. Rescue transport is inbound!</p>
+        <div class="btn-row" style="justify-content: center;">
+          <button type="button" class="btn btn-success" id="btn-finish-game">
+            View Expedition Completion Report →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN 7: COMPLETION SCREEN
+         ==================================================================== -->
+    <section id="screen-complete" class="screen" aria-labelledby="comp-title">
+      <span class="subtitle-badge">Mission Accomplished</span>
+      <h2 id="comp-title">Expedition Rescued: Master of the Marketing Mix</h2>
+      <div class="narrative-box">
+        <p style="margin: 0;">
+          Congratulations! By diagnosing Marketing Mix mismatches, sequencing strategic decisions, and aligning
+          Product, Price, Place, and Promotion, you successfully funded the conservation campaign and activated the
+          emergency rescue beacon.
+        </p>
+      </div>
+
+      <h3>Expedition Performance Summary</h3>
+      <table class="summary-table">
+        <tbody>
+          <tr>
+            <th>Rooms Completed</th>
+            <td>3 / 3 (Supply Depot, Field Observatory, Command Tent)</td>
+          </tr>
+          <tr>
+            <th>Logbook Fragments &amp; Access Code</th>
+            <td>Fragment 1 + Fragment 2 → Code <strong>4829</strong></td>
+          </tr>
+          <tr>
+            <th>Remaining Life Points</th>
+            <td id="summary-life">100 / 100</td>
+          </tr>
+          <tr>
+            <th>Time Remaining</th>
+            <td id="summary-time">20:00</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="btn-complete-restart">
+          ↻ Play Again (Restart Expedition)
+        </button>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN 8: GAME OVER SCREEN
+         ==================================================================== -->
+    <section id="screen-gameover" class="screen" aria-labelledby="go-title">
+      <span class="subtitle-badge" style="background: #fee2e2; color: #991b1b; border-color: #ef4444;">Expedition Halted</span>
+      <h2 id="go-title">Mission Failed — Out of Time or Life Points</h2>
+      <div class="narrative-box" style="border-left-color: var(--danger-red); background: var(--danger-bg);">
+        <p id="gameover-reason" style="margin: 0;">
+          Your expedition ran out of resources before the satellite transmitter could be activated.
+        </p>
+      </div>
+      <p>
+        Review how the four elements of the Marketing Mix support one another, then restart the expedition to try again.
+      </p>
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="btn-gameover-restart">
+          ↻ Restart Expedition
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /* ==========================================================================
+       1. GAME STATE & CONFIGURATION
+       ========================================================================== */
+    const INITIAL_TIME_SECONDS = 20 * 60; // 20 minutes
+    const INITIAL_LIFE = 100;
+    const PENALTY_POINTS = 10;
+    const CORRECT_DOOR_CODE = "4829";
+
+    const INITIAL_SEQUENCE_ITEMS = [
+      { id: "step-product", text: "Develop the Product features and quality standards to satisfy customer needs." },
+      { id: "step-target", text: "Segment the market and select a clear Target Audience." },
+      { id: "step-price-place", text: "Set a Price aligned with perceived value and design the Place (distribution) strategy." },
+      { id: "step-promo", text: "Launch Promotion campaigns to communicate value to the target audience." }
+    ];
+
+    const CORRECT_SEQUENCE_IDS = [
+      "step-target",
+      "step-product",
+      "step-price-place",
+      "step-promo"
+    ];
+
+    let state = {
+      currentScreen: "start",
+      timeRemaining: INITIAL_TIME_SECONDS,
+      lifePoints: INITIAL_LIFE,
+      timerInterval: null,
+      audioEnabled: false,
+      isMuted: false,
+      q1_1_solved: false,
+      q1_2_solved: false,
+      q2_1_solved: false,
+      q2_2_solved: false,
+      q3_1_solved: false,
+      room1Complete: false,
+      room2Complete: false,
+      room3Unlocked: false,
+      room3Complete: false,
+      sequenceOrder: []
+    };
+
+    /* ==========================================================================
+       2. DOM REFERENCES & AUDIO HELPERS
+       ========================================================================== */
+    const stageEl = document.getElementById("game-stage");
+    const hudBar = document.getElementById("hud-bar");
+    const hudTimer = document.getElementById("hud-timer");
+    const hudLife = document.getElementById("hud-life");
+    const hudFragments = document.getElementById("hud-fragments");
+    const timerPill = document.getElementById("timer-pill");
+    const lifePill = document.getElementById("life-pill");
+    const srAnnouncer = document.getElementById("sr-announcer");
+
+    const audioBg = document.getElementById("audio-bg");
+    const audioCorrect = document.getElementById("audio-correct");
+    const audioIncorrect = document.getElementById("audio-incorrect");
+    const audioDoc = document.getElementById("audio-doc");
+    const audioUnlock = document.getElementById("audio-unlock");
+
+    function announce(message) {
+      srAnnouncer.textContent = "";
+      setTimeout(() => { srAnnouncer.textContent = message; }, 50);
+    }
+
+    function playSound(audioEl) {
+      if (state.isMuted || !audioEl) return;
+      try {
+        audioEl.currentTime = 0;
+        const playPromise = audioEl.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            // Gracefully ignore missing audio file or autoplay restriction
+          });
+        }
+      } catch (e) {
+        // Safe fallback if local audio file is absent
+      }
+    }
+
+    function startBackgroundMusic() {
+      state.audioEnabled = true;
+      if (state.isMuted) return;
+      try {
+        audioBg.volume = 0.35;
+        const p = audioBg.play();
+        if (p !== undefined) {
+          p.catch(() => {});
+        }
+      } catch (e) {}
+    }
+
+    function toggleMute() {
+      state.isMuted = !state.isMuted;
+      const btnMute = document.getElementById("btn-mute");
+      btnMute.setAttribute("aria-pressed", String(state.isMuted));
+      btnMute.textContent = state.isMuted ? "🔇 Unmute Audio" : "🔊 Mute Audio";
+
+      if (state.isMuted) {
+        audioBg.pause();
+      } else if (state.audioEnabled) {
+        startBackgroundMusic();
+      }
+    }
+
+    function handleImgError(imgEl, fallbackLabel) {
+      const note = document.createElement("div");
+      note.className = "img-fallback-note";
+      note.textContent = fallbackLabel;
+      imgEl.replaceWith(note);
+    }
+
+    /* ==========================================================================
+       3. SCREEN NAVIGATION & BACKGROUND MANAGEMENT
+       ========================================================================== */
+    const SCREEN_BACKGROUNDS = {
+      start: "assets/cover.png",
+      instructions: "assets/cover.png",
+      map: "assets/cover.png",
+      room1: "assets/room1.png",
+      room2: "assets/room2.png",
+      room3: "assets/room3.png",
+      complete: "assets/cover.png",
+      gameover: "assets/cover.png"
+    };
+
+    function showScreen(screenName) {
+      // Guard: Room 3 cannot open unless unlocked
+      if (screenName === "room3" && !state.room3Unlocked) {
+        announce("Room 3 is locked. Collect both fragments and enter the four-digit code first.");
+        return;
+      }
+
+      state.currentScreen = screenName;
+
+      // Update background image
+      const bgFile = SCREEN_BACKGROUNDS[screenName] || "assets/cover.png";
+      stageEl.style.backgroundImage = `url('${bgFile}')`;
+
+      // Show HUD on all screens except Start
+      hudBar.style.display = screenName === "start" ? "none" : "flex";
+
+      // Switch visible section
+      document.querySelectorAll(".screen").forEach(sec => sec.classList.remove("active"));
+      const target = document.getElementById(`screen-${screenName}`);
+      if (target) {
+        target.classList.add("active");
+        const heading = target.querySelector("h1, h2");
+        if (heading) {
+          heading.setAttribute("tabindex", "-1");
+          heading.focus();
+        }
+      }
+
+      if (screenName === "map") {
+        updateMapUI();
+      }
+    }
+
+    /* ==========================================================================
+       4. TIMER & LIFE POINTS MECHANICS
+       ========================================================================== */
+    function formatTime(totalSeconds) {
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = totalSeconds % 60;
+      return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+    }
+
+    function updateHUD() {
+      hudTimer.textContent = formatTime(state.timeRemaining);
+      hudLife.textContent = state.lifePoints;
+      const fragCount = (state.room1Complete ? 1 : 0) + (state.room2Complete ? 1 : 0);
+      hudFragments.textContent = `${fragCount} / 2`;
+
+      timerPill.classList.toggle("warning", state.timeRemaining <= 120);
+      lifePill.classList.toggle("warning", state.lifePoints <= 30);
+    }
+
+    function startTimer() {
+      stopTimer();
+      state.timerInterval = setInterval(() => {
+        if (state.currentScreen === "complete" || state.currentScreen === "gameover") {
+          stopTimer();
+          return;
+        }
+        state.timeRemaining -= 1;
+        updateHUD();
+
+        if (state.timeRemaining <= 0) {
+          state.timeRemaining = 0;
+          updateHUD();
+          triggerGameOver("Time expired! The 20-minute expedition window closed before the rescue beacon was activated.");
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+        state.timerInterval = null;
+      }
+    }
+
+    function deductLifePoints() {
+      state.lifePoints = Math.max(0, state.lifePoints - PENALTY_POINTS);
+      updateHUD();
+      if (state.lifePoints <= 0) {
+        triggerGameOver("Your expedition ran out of Life Points after repeated strategic errors.");
+      }
+    }
+
+    function triggerGameOver(reasonText) {
+      stopTimer();
+      document.getElementById("gameover-reason").textContent = reasonText;
+      showScreen("gameover");
+      announce("Game Over. " + reasonText);
+    }
+
+    /* ==========================================================================
+       5. NAVIGATION MAP & DOCUMENT RECONSTRUCTION UI
+       ========================================================================== */
+    function updateMapUI() {
+      // Progress bar pills
+      const progR1 = document.getElementById("prog-r1");
+      const progR2 = document.getElementById("prog-r2");
+      const progCode = document.getElementById("prog-code");
+      const progR3 = document.getElementById("prog-r3");
+
+      progR1.textContent = state.room1Complete ? "Room 1: Completed ✓" : "Room 1: Incomplete";
+      progR1.classList.toggle("done", state.room1Complete);
+
+      progR2.textContent = state.room2Complete ? "Room 2: Completed ✓" : "Room 2: Incomplete";
+      progR2.classList.toggle("done", state.room2Complete);
+
+      progCode.textContent = state.room3Unlocked ? "4-Digit Code: Verified ✓" : "4-Digit Code: Locked";
+      progCode.classList.toggle("done", state.room3Unlocked);
+
+      progR3.textContent = state.room3Complete ? "Room 3: Completed ✓" : (state.room3Unlocked ? "Room 3: Unlocked" : "Room 3: Locked");
+      progR3.classList.toggle("done", state.room3Complete);
+
+      // Room 1 Card
+      const cardR1 = document.getElementById("card-room1");
+      const tagR1 = document.getElementById("tag-room1");
+      const btnR1 = document.getElementById("btn-open-room1");
+      if (state.room1Complete) {
+        cardR1.classList.add("completed");
+        tagR1.textContent = "Completed ✓";
+        tagR1.className = "status-tag status-done";
+        btnR1.textContent = "Review Room 1";
+      } else {
+        cardR1.classList.remove("completed");
+        tagR1.textContent = "Open Access";
+        tagR1.className = "status-tag status-open";
+        btnR1.textContent = "Enter Room 1";
+      }
+
+      // Room 2 Card
+      const cardR2 = document.getElementById("card-room2");
+      const tagR2 = document.getElementById("tag-room2");
+      const btnR2 = document.getElementById("btn-open-room2");
+      if (state.room2Complete) {
+        cardR2.classList.add("completed");
+        tagR2.textContent = "Completed ✓";
+        tagR2.className = "status-tag status-done";
+        btnR2.textContent = "Review Room 2";
+      } else {
+        cardR2.classList.remove("completed");
+        tagR2.textContent = "Open Access";
+        tagR2.className = "status-tag status-open";
+        btnR2.textContent = "Enter Room 2";
+      }
+
+      // Room 3 Card
+      const cardR3 = document.getElementById("card-room3");
+      const tagR3 = document.getElementById("tag-room3");
+      const btnR3 = document.getElementById("btn-open-room3");
+      if (state.room3Unlocked) {
+        cardR3.classList.remove("locked");
+        cardR3.classList.toggle("completed", state.room3Complete);
+        tagR3.textContent = state.room3Complete ? "Completed ✓" : "Unlocked";
+        tagR3.className = state.room3Complete ? "status-tag status-done" : "status-tag status-open";
+        btnR3.disabled = false;
+        btnR3.className = "btn btn-success";
+        btnR3.textContent = state.room3Complete ? "Review Room 3" : "Enter Room 3 →";
+      } else {
+        cardR3.classList.add("locked");
+        cardR3.classList.remove("completed");
+        tagR3.textContent = "Locked";
+        tagR3.className = "status-tag status-locked";
+        btnR3.disabled = true;
+        btnR3.className = "btn btn-secondary";
+        btnR3.textContent = "🔒 Locked";
+      }
+
+      // Fragment Slots & Reconstruction
+      const stage = document.getElementById("fragments-stage");
+      const slot1 = document.getElementById("slot-frag1");
+      const slot2 = document.getElementById("slot-frag2");
+      const reconText = document.getElementById("recon-status-text");
+      const accClueBox = document.getElementById("accessible-clue-box");
+      const codeInput = document.getElementById("code-input");
+      const btnCode = document.getElementById("btn-submit-code");
+
+      if (state.room1Complete) {
+        slot1.classList.add("collected");
+        slot1.innerHTML = `<img src="assets/fragment1.png" alt="Left half of torn expedition map showing digits 4 and 8" class="fragment-img" onerror="handleImgError(this, 'Fragment 1 Collected (Left Half: 48)')" />`;
+      } else {
+        slot1.classList.remove("collected");
+        slot1.innerHTML = `<span style="color: var(--text-muted); font-weight: 600;">Fragment 1 Missing</span><small style="color: var(--text-muted);">Complete Room 1 to reveal</small>`;
+      }
+
+      if (state.room2Complete) {
+        slot2.classList.add("collected");
+        slot2.innerHTML = `<img src="assets/fragment2.png" alt="Right half of torn expedition map showing digits 2 and 9" class="fragment-img" onerror="handleImgError(this, 'Fragment 2 Collected (Right Half: 29)')" />`;
+      } else {
+        slot2.classList.remove("collected");
+        slot2.innerHTML = `<span style="color: var(--text-muted); font-weight: 600;">Fragment 2 Missing</span><small style="color: var(--text-muted);">Complete Room 2 to reveal</small>`;
+      }
+
+      const bothCollected = state.room1Complete
